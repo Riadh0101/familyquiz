@@ -42,7 +42,7 @@
         <div class="card stat-card text-bg-warning">
             <div class="card-body position-relative">
                 <i class="bi bi-trophy-fill stat-icon"></i>
-                <div class="stat-value">{{ leaderboard[0].username if leaderboard and leaderboard[0].total_score > 0 else '—' }}</div>
+                <div class="stat-value">{{ leaderboard[0].username if leaderboard else '—' }}</div>
                 <div class="stat-label"><i class="bi bi-star me-1"></i>Current Leader</div>
             </div>
         </div>

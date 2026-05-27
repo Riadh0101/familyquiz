@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+quiz.db
+flask_output.txt
+flask_error.txt
+*_test_output.txt
+*_test_error.txt
+.playwright-mcp/
+cookies.txt
+response.html
+*.network-request
+*.network-response
+

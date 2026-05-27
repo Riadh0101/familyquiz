@@ -8,7 +8,7 @@ import qrcode
 from io import BytesIO
 
 app = Flask(__name__)
-app.secret_key = 'family-quiz-secret-key-change-in-production'
+app.secret_key = os.environ.get('SECRET_KEY', 'family-quiz-secret-key-change-in-production')
 DATABASE = os.environ.get('DATABASE_PATH', 'quiz.db')
 PORT = int(os.environ.get('PORT', 5000))
 APP_URL = os.environ.get('APP_URL', None)
@@ -139,6 +139,8 @@ def login():
 
         if not username:
             error = 'Username is required.'
+        elif len(username) > 50:
+            error = 'Username must be 50 characters or fewer.'
         else:
             db = get_db()
             user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
@@ -253,7 +255,7 @@ def admin_dashboard():
         FROM users u
         LEFT JOIN answers a ON a.user_id = u.id
         LEFT JOIN questions q ON q.id = a.question_id
-        GROUP BY u.id
+        GROUP BY u.id, u.is_admin
         ORDER BY total_score DESC, u.username
     """).fetchall()
 
@@ -333,4 +335,4 @@ def add_question():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=os.environ.get('FLASK_ENV') != 'production', host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
