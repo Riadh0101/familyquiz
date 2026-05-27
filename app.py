@@ -1,12 +1,45 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, session, url_for, g
+from flask import Flask, render_template, request, redirect, session, url_for, g, send_file
 from functools import wraps
 from collections import defaultdict
 import os
+import socket
+import qrcode
+from io import BytesIO
 
 app = Flask(__name__)
 app.secret_key = 'family-quiz-secret-key-change-in-production'
 DATABASE = os.environ.get('DATABASE_PATH', 'quiz.db')
+PORT = int(os.environ.get('PORT', 5000))
+APP_URL = os.environ.get('APP_URL', None)
+
+
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = "127.0.0.1"
+    finally:
+        s.close()
+    return ip
+
+
+def get_app_url():
+    if APP_URL:
+        return APP_URL
+    return f"http://{get_local_ip()}:{PORT}"
+
+
+@app.route('/qr')
+def qr_code():
+    url = get_app_url()
+    img = qrcode.make(url)
+    buf = BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return send_file(buf, mimetype='image/png')
 
 
 def get_db():
@@ -127,9 +160,9 @@ def login():
                     return redirect(url_for('admin_dashboard'))
                 return redirect(url_for('quiz'))
 
-        return render_template('login.html', error=error)
+        return render_template('login.html', error=error, app_url=get_app_url())
 
-    return render_template('login.html', error=None)
+    return render_template('login.html', error=None, app_url=get_app_url())
 
 
 @app.route('/logout')

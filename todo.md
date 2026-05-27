@@ -21,6 +21,10 @@
 - [x] Enhanced dashboard: stat cards, progress bars, tabs
 - [x] Quit button in navbar (styled logout)
 - [x] Visual score badges (high/low/zero)
+- [x] QR code on login page — scan to open app
+- [x] Auto-detect local network IP for QR URL
+- [x] `/qr` route serving QR code PNG
+- [x] Configurable via `PORT` and `APP_URL` env vars
 
 ## Planned / Expandable
 - [ ] Admin edit user answers
