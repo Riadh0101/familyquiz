@@ -1,0 +1,21 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link "Family Quiz" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - button [ref=e5] [cursor=pointer]
+  - generic [ref=e11]:
+    - heading "Welcome to Family Quiz" [level=3] [ref=e12]
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]: Username
+        - textbox "Username" [ref=e16]
+      - generic [ref=e17]:
+        - generic [ref=e18]: Password
+        - textbox "Password" [ref=e19]
+      - button "Login" [ref=e20] [cursor=pointer]
+    - separator [ref=e21]
+    - generic [ref=e22]:
+      - paragraph [ref=e23]: New users are auto-registered on first login.
+      - paragraph [ref=e24]: Your password is your username + "123"
+  - contentinfo [ref=e25]: Family Quiz App — Built with Flask

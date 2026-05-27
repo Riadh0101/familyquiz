@@ -1,0 +1,14 @@
+services:
+  quiz:
+    build: .
+    container_name: family-quiz
+    ports:
+      - "5000:5000"
+    volumes:
+      - quiz_data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_PATH=/app/data/quiz.db
+
+volumes:
+  quiz_data:

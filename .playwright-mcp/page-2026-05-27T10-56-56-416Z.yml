@@ -1,0 +1,41 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link "Family Quiz" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - button [ref=e5] [cursor=pointer]
+  - generic [ref=e7]:
+    - heading "Admin Dashboard" [level=2] [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e12]:
+        - heading "1" [level=3] [ref=e13]
+        - text: Registered Users
+      - generic [ref=e16]:
+        - heading "0" [level=3] [ref=e17]
+        - text: Questions
+      - generic [ref=e20]:
+        - heading "N/A" [level=3] [ref=e21]
+        - text: Leader
+    - tablist [ref=e22]:
+      - tab "Leaderboard" [selected] [ref=e23] [cursor=pointer]
+      - tab "Answer Details" [ref=e24] [cursor=pointer]
+    - tabpanel "Leaderboard" [ref=e26]:
+      - generic [ref=e27]:
+        - heading "Leaderboard" [level=5] [ref=e29]
+        - table [ref=e32]:
+          - rowgroup [ref=e33]:
+            - row "Rank Username Answers Total Score" [ref=e34]:
+              - columnheader "Rank" [ref=e35]
+              - columnheader "Username" [ref=e36]
+              - columnheader "Answers" [ref=e37]
+              - columnheader "Total Score" [ref=e38]
+          - rowgroup [ref=e39]:
+            - row "1 admin 0 / 0 0" [ref=e40]:
+              - cell "1" [ref=e41]:
+                - generic [ref=e42]: "1"
+              - cell "admin" [ref=e43]:
+                - strong [ref=e44]: admin
+              - cell "0 / 0" [ref=e45]
+              - cell "0" [ref=e46]:
+                - strong [ref=e47]: "0"
+  - contentinfo [ref=e48]: Family Quiz App — Built with Flask

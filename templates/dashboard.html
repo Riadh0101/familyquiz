@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 animate-in">
+    <div>
+        <h2 class="mb-1">
+            <i class="bi bi-speedometer2 text-primary me-2"></i>Admin Dashboard
+        </h2>
+        <p class="text-muted mb-0">
+            <i class="bi bi-people me-1"></i>{{ leaderboard|length }} users &middot;
+            <i class="bi bi-patch-question ms-1 me-1"></i>{{ question_count }} questions
+        </p>
+    </div>
+    <div class="mt-2 mt-sm-0">
+        <a href="{{ url_for('add_question') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Add Question
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3 animate-in animate-in-delay-1">
+        <div class="card stat-card text-bg-primary">
+            <div class="card-body position-relative">
+                <i class="bi bi-people-fill stat-icon"></i>
+                <div class="stat-value">{{ leaderboard|length }}</div>
+                <div class="stat-label"><i class="bi bi-person me-1"></i>Registered Users</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-in animate-in-delay-2">
+        <div class="card stat-card text-bg-success">
+            <div class="card-body position-relative">
+                <i class="bi bi-patch-question-fill stat-icon"></i>
+                <div class="stat-value">{{ question_count }}</div>
+                <div class="stat-label"><i class="bi bi-plus-circle me-1"></i>Total Questions</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-in animate-in-delay-3">
+        <div class="card stat-card text-bg-warning">
+            <div class="card-body position-relative">
+                <i class="bi bi-trophy-fill stat-icon"></i>
+                <div class="stat-value">{{ leaderboard[0].username if leaderboard and leaderboard[0].total_score > 0 else '—' }}</div>
+                <div class="stat-label"><i class="bi bi-star me-1"></i>Current Leader</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-in animate-in-delay-3">
+        {% set total_answers = leaderboard|sum(attribute='answers_count') %}
+        {% set max_possible = leaderboard|length * question_count %}
+        <div class="card stat-card text-bg-info">
+            <div class="card-body position-relative">
+                <i class="bi bi-graph-up-arrow stat-icon"></i>
+                <div class="stat-value">{{ total_answers }}</div>
+                <div class="stat-label">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Total Answers
+                    {% if max_possible > 0 %}
+                    ({{ (total_answers / max_possible * 100)|int }}% completion)
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-4 animate-in" id="dashboardTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="leaderboard-tab" data-bs-toggle="tab" data-bs-target="#leaderboard"
+                type="button" role="tab" aria-selected="true">
+            <i class="bi bi-trophy me-1"></i>Leaderboard
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details"
+                type="button" role="tab" aria-selected="false">
+            <i class="bi bi-journal-text me-1"></i>Answer Details
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="questions-tab" data-bs-toggle="tab" data-bs-target="#questions"
+                type="button" role="tab" aria-selected="false">
+            <i class="bi bi-list-check me-1"></i>Manage Questions
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="leaderboard" role="tabpanel">
+        <div class="card shadow-sm animate-in">
+            <div class="card-header bg-warning bg-opacity-10 border-0">
+                <h5 class="mb-0"><i class="bi bi-trophy-fill text-warning me-2"></i>Leaderboard</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width:60px">Rank</th>
+                                <th>Username</th>
+                                <th style="width:120px">Progress</th>
+                                <th style="width:100px" class="text-center">Answers</th>
+                                <th style="width:120px" class="text-center">Total Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in leaderboard %}
+                            <tr class="leaderboard-row {{ 'current-user' if u.username == session.username else '' }}">
+                                <td class="text-center">
+                                    {% if loop.index == 1 %}
+                                    <span class="rank-badge rank-1"><i class="bi bi-trophy-fill trophy-icon"></i></span>
+                                    {% elif loop.index == 2 %}
+                                    <span class="rank-badge rank-2"><i class="bi bi-trophy-fill trophy-icon" style="font-size:1rem;"></i></span>
+                                    {% elif loop.index == 3 %}
+                                    <span class="rank-badge rank-3"><i class="bi bi-trophy-fill trophy-icon" style="font-size:1rem;"></i></span>
+                                    {% else %}
+                                    <span class="fw-bold text-muted">{{ loop.index }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center"
+                                             style="width:36px;height:36px;">
+                                            <i class="bi bi-person-fill text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ u.username }}</strong>
+                                            {% if u.is_admin %}<span class="badge bg-danger bg-opacity-75 ms-1">Admin</span>{% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if question_count > 0 %}
+                                    {% set pct = (u.answers_count / question_count * 100)|int %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress flex-grow-1 progress-thin">
+                                            <div class="progress-bar bg-success" role="progressbar"
+                                                 style="width: {{ pct }}%"
+                                                 aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted fw-medium">{{ pct }}%</small>
+                                    </div>
+                                    {% else %}
+                                    <small class="text-muted">—</small>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center text-muted">{{ u.answers_count }} / {{ question_count }}</td>
+                                <td class="text-center">
+                                    <span class="fs-5 fw-bold {{ 'text-primary' if u.total_score > 0 else 'text-muted' }}">
+                                        {{ u.total_score }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="details" role="tabpanel">
+        <div class="card shadow-sm animate-in">
+            <div class="card-header bg-info bg-opacity-10 border-0">
+                <h5 class="mb-0"><i class="bi bi-journal-text text-info me-2"></i>Answer Details by User</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if grouped_answers %}
+                <div class="accordion accordion-flush" id="answersAccordion">
+                    {% for username, answers in grouped_answers.items() %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#user-{{ loop.index }}">
+                                <div class="d-flex align-items-center gap-2 w-100 me-3">
+                                    <i class="bi bi-person-circle fs-5"></i>
+                                    <strong>{{ username }}</strong>
+                                    <span class="badge bg-primary rounded-pill ms-auto">
+                                        {% set ns = namespace(user_total=0) %}
+                                        {% for a in answers %}{% set ns.user_total = ns.user_total + a.score %}{% endfor %}
+                                        {{ ns.user_total }} pts
+                                    </span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="user-{{ loop.index }}" class="accordion-collapse collapse"
+                             data-bs-parent="#answersAccordion">
+                            <div class="accordion-body p-0">
+                                <table class="table table-sm table-bordered detail-table mb-0">
+                                    <thead class="table-secondary">
+                                        <tr>
+                                            <th style="width:45%">Question</th>
+                                            <th>Chosen Answer</th>
+                                            <th style="width:80px" class="text-center">Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% set ns = namespace(user_total=0) %}
+                                        {% for a in answers %}
+                                        {% set ns.user_total = ns.user_total + a.score %}
+                                        <tr>
+                                            <td>{{ a.question_text }}</td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border px-3 py-2">
+                                                    {{ a.option_text }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if a.score > 5 %}
+                                                <span class="answer-score-badge score-high">{{ a.score }}</span>
+                                                {% elif a.score > 0 %}
+                                                <span class="answer-score-badge score-low">{{ a.score }}</span>
+                                                {% else %}
+                                                <span class="answer-score-badge score-zero">{{ a.score }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <td colspan="2" class="text-end fw-bold">Total:</td>
+                                            <td class="text-center fw-bold text-primary">{{ ns.user_total }}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-4 text-center">
+                    <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                    <p class="text-muted mb-0">No answers recorded yet. Questions and users need to be active first.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="questions" role="tabpanel">
+        <div class="card shadow-sm animate-in">
+            <div class="card-header d-flex justify-content-between align-items-center border-0"
+                 style="background: rgba(102,126,234,0.1);">
+                <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Questions ({{ question_count }})</h5>
+                <a href="{{ url_for('add_question') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Add New
+                </a>
+            </div>
+            <div class="card-body p-3">
+                {% if questions %}
+                {% for q in questions %}
+                <div class="question-list-item d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1 me-3">
+                        <div class="fw-medium mb-1">{{ q.text }}</div>
+                        <div class="d-flex flex-wrap gap-2 small">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                                A: {{ q.opt_a }} ({{ q.score_a }})
+                            </span>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                B: {{ q.opt_b }} ({{ q.score_b }})
+                            </span>
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
+                                C: {{ q.opt_c }} ({{ q.score_c }})
+                            </span>
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ url_for('delete_question', question_id=q.id) }}"
+                          onsubmit="return confirm('Delete this question and all its answers?')">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-patch-question fs-1 text-muted d-block mb-2"></i>
+                    <p class="text-muted mb-0">No questions yet. Click "Add New" to create the first question!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

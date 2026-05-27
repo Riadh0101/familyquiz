@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Add Question{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-in">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white border-0">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-patch-plus fs-2"></i>
+                    <div>
+                        <h4 class="mb-0">Add New Question</h4>
+                        <small class="opacity-75">Create a question with three scored options</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                {% if error %}
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>{{ error }}</div>
+                </div>
+                {% endif %}
+
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="text" class="form-label fw-medium">
+                            <i class="bi bi-question-circle me-1"></i>Question
+                        </label>
+                        <textarea class="form-control" name="text" id="text" rows="3"
+                                  placeholder="Enter your question here..." required></textarea>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="card h-100 border-primary border-2">
+                                <div class="card-header bg-primary bg-opacity-10 text-primary fw-bold text-center py-2">
+                                    <i class="bi bi-a-circle-fill me-1"></i>Option A
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label small text-muted">Answer Text</label>
+                                        <input type="text" class="form-control" name="opt_a" placeholder="Option A" required>
+                                    </div>
+                                    <div>
+                                        <label class="form-label small text-muted">Score</label>
+                                        <input type="number" class="form-control" name="score_a" value="0"
+                                               placeholder="Points for A">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 border-success border-2">
+                                <div class="card-header bg-success bg-opacity-10 text-success fw-bold text-center py-2">
+                                    <i class="bi bi-b-circle-fill me-1"></i>Option B
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label small text-muted">Answer Text</label>
+                                        <input type="text" class="form-control" name="opt_b" placeholder="Option B" required>
+                                    </div>
+                                    <div>
+                                        <label class="form-label small text-muted">Score</label>
+                                        <input type="number" class="form-control" name="score_b" value="0"
+                                               placeholder="Points for B">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 border-danger border-2">
+                                <div class="card-header bg-danger bg-opacity-10 text-danger fw-bold text-center py-2">
+                                    <i class="bi bi-c-circle-fill me-1"></i>Option C
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label small text-muted">Answer Text</label>
+                                        <input type="text" class="form-control" name="opt_c" placeholder="Option C" required>
+                                    </div>
+                                    <div>
+                                        <label class="form-label small text-muted">Score</label>
+                                        <input type="number" class="form-control" name="score_c" value="0"
+                                               placeholder="Points for C">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex justify-content-between">
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check2-circle me-1"></i>Add Question
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
