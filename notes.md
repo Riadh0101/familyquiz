@@ -4,6 +4,8 @@
 - **Single-file Flask app** (`app.py`) — easy to understand and modify
 - **SQLite** (`quiz.db`) — zero-config, auto-created on first run
 - **Bootstrap 5** (CDN) — responsive UI without build tooling
+- **Bootstrap Icons** (CDN) — icon library for visual enhancements
+- **Emoji favicon** — house emoji as favicon via data URI
 - **Jinja2 templates** with inheritance from `base.html`
 
 ## Authentication
@@ -26,12 +28,21 @@ answers:  id, user_id (FK), question_id (FK), selected_option
 |-------|--------|---------|
 | `/login` | Public | Login form |
 | `/quiz` | Users | Answer questions, view score |
-| `/admin/dashboard` | Admin | Leaderboard + answer details |
+| `/admin/dashboard` | Admin | Leaderboard + answer details + manage questions |
 | `/admin/add_question` | Admin | Add quiz question |
+| `/admin/delete_question/<id>` | Admin | Delete question with confirm |
 | `/logout` | Any | Clear session |
 
 ## How Scoring Works
 Each question has three options. Each option has a score value (can be 0 or any integer). The user's total score is the sum of all their selected options' scores. This allows flexible scoring (e.g., correct=10, wrong=0, or opinion-based scoring).
+
+## UI Features
+- **Navbar**: Gradient background, brand icon, contextual nav links, username display, Quit button
+- **Login**: Centered card with icon header, info alerts for password rules
+- **Quiz**: Question cards with colored radio option cards, score display with trophy icon, answers table with score badges
+- **Admin Dashboard**: 4 stat cards (users, questions, leader, answers/completion), 3-tab layout (Leaderboard, Answer Details, Manage Questions), progress bars per user, accordion answer details, question list with delete capability
+- **Animations**: fadeInUp on cards, hover effects on cards/buttons
+- **Score badges**: green (high), red (low), gray (zero)
 
 ## Security Notes
 - No CSRF protection (family use only)
