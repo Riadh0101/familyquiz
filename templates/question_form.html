@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if editing else 'Add' }} Question{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-in">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white border-0">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-{{ 'pencil-square' if editing else 'patch-plus' }} fs-2"></i>
+                    <div>
+                        <h1 class="h4 mb-0">{{ 'Edit Question' if editing else 'Add New Question' }}</h1>
+                        <small class="opacity-75">A question with three options, each worth some points</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                {% if error %}
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>{{ error }}</div>
+                </div>
+                {% endif %}
+                {% if editing and answered %}
+                <div class="alert alert-warning small">
+                    <i class="bi bi-exclamation-circle me-1"></i>
+                    {{ answered }} player{{ 's have' if answered != 1 else ' has' }} already answered this question.
+                    Changing the scores will update their totals.
+                </div>
+                {% endif %}
+
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label for="text" class="form-label fw-medium">
+                            <i class="bi bi-question-circle me-1"></i>Question
+                        </label>
+                        <textarea class="form-control" name="text" id="text" rows="3" maxlength="500"
+                                  placeholder="Enter your question here..." required
+                                  {{ 'autofocus' if not editing }}>{{ q.text or '' }}</textarea>
+                    </div>
+
+                    <div class="row g-3">
+                        {% for letter, color in [('a', 'primary'), ('b', 'success'), ('c', 'danger')] %}
+                        <div class="col-md-4">
+                            <div class="card h-100 border-{{ color }} border-2">
+                                <div class="card-header bg-{{ color }} bg-opacity-10 text-{{ color }} fw-bold text-center py-2">
+                                    <i class="bi bi-{{ letter }}-circle-fill me-1"></i>Option {{ letter|upper }}
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label for="opt_{{ letter }}" class="form-label small text-muted">Answer Text</label>
+                                        <input type="text" class="form-control" id="opt_{{ letter }}" name="opt_{{ letter }}"
+                                               value="{{ q['opt_' ~ letter] or '' }}" maxlength="500"
+                                               placeholder="Option {{ letter|upper }}" required>
+                                    </div>
+                                    <div>
+                                        <label for="score_{{ letter }}" class="form-label small text-muted">Score</label>
+                                        <input type="number" class="form-control" id="score_{{ letter }}" name="score_{{ letter }}"
+                                               value="{{ q['score_' ~ letter] if q['score_' ~ letter] is not none else 0 }}"
+                                               step="1" min="-1000000" max="1000000" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-4 d-flex flex-wrap gap-2 justify-content-between">
+                        <a href="{{ url_for('main.admin_dashboard') }}#questions" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                        </a>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if not editing %}
+                            <button type="submit" name="add_another" value="1" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-plus-circle me-1"></i>Save &amp; Add Another
+                            </button>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check2-circle me-1"></i>{{ 'Save Changes' if editing else 'Add Question' }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

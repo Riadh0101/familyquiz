@@ -1,8 +1,15 @@
 __pycache__/
 *.pyc
 *.pyo
+.venv/
+venv/
+.pytest_cache/
 .env
 quiz.db
+quiz.db-*
+*.db
+.secret_key
+data/
 flask_output.txt
 flask_error.txt
 *_test_output.txt
@@ -12,4 +19,3 @@ cookies.txt
 response.html
 *.network-request
 *.network-response
-
