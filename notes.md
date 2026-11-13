@@ -1,76 +1,51 @@
-# Family Quiz App - Notes
+# Family Quiz App - Developer Notes
+
+See `README.md` for setup, configuration and deployment.
 
 ## Architecture
-- **Single-file Flask app** (`app.py`) — easy to understand and modify
-- **SQLite** (`quiz.db`) — zero-config, auto-created on first run
-- **Bootstrap 5** (CDN) — responsive UI without build tooling
-- **Bootstrap Icons** (CDN) — icon library for visual enhancements
-- **Emoji favicon** — house emoji as favicon via data URI
-- **Jinja2 templates** with inheritance from `base.html`
+- **Single-file Flask app** (`app.py`) built with an app factory, `create_app(config)`. All routes
+  are on the `main` blueprint, so templates use `url_for('main.<view>')`.
+- **SQLite** in WAL mode. The schema and migrations run in `init_db()` on every start, and both
+  are idempotent.
+- **Bootstrap 5 and Bootstrap Icons** from jsDelivr, pinned with SRI hashes. `static/app.js`
+  replaces inline JS so the CSP can disallow inline scripts.
+- **Flask-WTF CSRFProtect.** Every POST form includes `csrf_token()`.
+- **Production servers:** gunicorn (`--preload`) in Docker and waitress for `python app.py`.
 
 ## Authentication
-| User | Password |
-|------|----------|
-| Regular user (`{username}`) | `{username}123` |
-| Admin (`admin`) | `admin123` |
+- Passwords are hashed with Werkzeug's `generate_password_hash`.
+- Usernames are matched case-insensitively. Logging in with an unknown name creates the account
+  (when `ALLOW_REGISTRATION` is on) with the password entered, which must be at least 4 characters.
+- The admin account is `admin`. Its password comes from `ADMIN_PASSWORD` and is re-applied at
+  every start. If that is unset, a random password is generated once and logged.
+- Legacy accounts (no `password_hash`) are accepted once with `username + "123"` and then sent to
+  the change-password page.
 
-New users are auto-registered on first successful login.
-
-## Database Schema (3 tables)
+## Database Schema
 ```
-users:    id, username, is_admin, created_at
+users:     id, username (unique), is_admin, password_hash, created_at
 questions: id, text, opt_a, opt_b, opt_c, score_a, score_b, score_c
-answers:  id, user_id (FK), question_id (FK), selected_option
+answers:   id, user_id (FK), question_id (FK), selected_option (A|B|C), UNIQUE(user_id, question_id)
 ```
 
-## Key Routes
+## Routes
 | Route | Access | Purpose |
 |-------|--------|---------|
-| `/login` | Public | Login form |
-| `/quiz` | Users | Answer questions, view score |
-| `/admin/dashboard` | Admin | Leaderboard + answer details + manage questions |
-| `/admin/add_question` | Admin | Add quiz question |
-| `/admin/delete_question/<id>` | Admin | Delete question with confirm |
-| `/logout` | Any | Clear session |
+| `/login` | Public | Login and self-registration |
+| `/logout` | Any | Clear session (the navbar sends a POST) |
+| `/qr` | Public | QR code PNG for the app URL |
+| `/healthz` | Public | Health check |
+| `/account/password` | Logged in | Change password |
+| `/quiz` | Player | Answer questions, view score |
+| `/admin/dashboard` | Admin | Stats, leaderboard, answers, questions |
+| `/admin/add_question` | Admin | Add question ("Save & Add Another" supported) |
+| `/admin/questions/<id>/edit` | Admin | Edit question |
+| `/admin/delete_question/<id>` | Admin (POST) | Delete question and its answers |
+| `/admin/users/<id>/reset_answers` | Admin (POST) | Clear a player's answers |
+| `/admin/users/<id>/delete` | Admin (POST) | Delete a player |
+| `/admin/export.csv` | Admin | Download results (formula-injection safe) |
 
-## How Scoring Works
-Each question has three options. Each option has a score value (can be 0 or any integer). The user's total score is the sum of all their selected options' scores. This allows flexible scoring (e.g., correct=10, wrong=0, or opinion-based scoring).
-
-## UI Features
-- **Navbar**: Gradient background, brand icon, contextual nav links, username display, Quit button
-- **Login**: Centered card with icon header, info alerts for password rules
-- **Quiz**: Question cards with colored radio option cards, score display with trophy icon, answers table with score badges
-- **Admin Dashboard**: 4 stat cards (users, questions, leader, answers/completion), 3-tab layout (Leaderboard, Answer Details, Manage Questions), progress bars per user, accordion answer details, question list with delete capability
-- **Animations**: fadeInUp on cards, hover effects on cards/buttons
-- **Score badges**: green (high), red (low), gray (zero)
-
-## Security Notes
-- No CSRF protection (family use only)
-- Passwords derived by convention, not hashed
-- Session secret key is hardcoded — change in production
-- SQLite database is local and not exposed
-
-## Running the App
-
-### Local (no Docker)
-```bash
-pip install -r requirements.txt
-python app.py
-```
-Opens at `http://localhost:5000`
-
-### Docker
-```bash
-docker compose up --build
-```
-Or build & run manually:
-```bash
-docker build -t family-quiz .
-docker run -p 5000:5000 -v quiz_data:/app/data -e DATABASE_PATH=/app/data/quiz.db family-quiz
-```
-
-### Configuration
-| Env Var | Default | Description |
-|---------|---------|-------------|
-| `DATABASE_PATH` | `quiz.db` | Path to SQLite database file |
-| `FLASK_ENV` | — | Set to `production` for production mode |
+## Scoring
+Each option has an integer score, which can be negative. A player's total is the sum of the
+scores of the options they chose. Answers are final once submitted; the admin can reset them.
+The leaderboard excludes admins.

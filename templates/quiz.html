@@ -1,18 +1,30 @@
 {% extends "base.html" %}
 {% block title %}Quiz{% endblock %}
 
+{% macro score_badge(score) -%}
+    {% if score > 5 %}
+    <span class="answer-score-badge score-high"><i class="bi bi-star-fill me-1"></i>{{ score }}</span>
+    {% elif score > 0 %}
+    <span class="answer-score-badge score-low">{{ score }}</span>
+    {% else %}
+    <span class="answer-score-badge score-zero">{{ score }}</span>
+    {% endif %}
+{%- endmacro %}
+
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 animate-in">
     <div>
-        <h2 class="mb-1">
+        <h1 class="h2 mb-1">
             <i class="bi bi-pencil-square text-primary me-2"></i>Welcome, {{ session.username }}!
-        </h2>
+        </h1>
         <p class="text-muted mb-0">
             <i class="bi bi-question-circle me-1"></i>
             {% if questions %}
             {{ questions|length }} question{{ 's' if questions|length != 1 }} remaining
-            {% else %}
+            {% elif my_answers %}
             All questions answered!
+            {% else %}
+            No questions yet.
             {% endif %}
         </p>
     </div>
@@ -28,18 +40,17 @@
 </div>
 
 {% if questions %}
-<form method="POST">
+<form method="POST" id="quiz-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="row g-4 mb-4">
         {% for q in questions %}
         <div class="col-12 animate-in animate-in-delay-{{ loop.index if loop.index <= 3 else 3 }}">
-            <div class="card quiz-card shadow-sm">
+            <fieldset class="card quiz-card shadow-sm">
                 <div class="card-body p-4">
-                    <div class="d-flex align-items-start gap-3 mb-3">
-                        <span class="badge bg-primary rounded-circle p-2 mt-1" style="width:32px;height:32px;">
-                            {{ loop.index }}
-                        </span>
-                        <h5 class="card-title mb-0 flex-grow-1">{{ q.text }}</h5>
-                    </div>
+                    <legend class="d-flex align-items-start gap-3 mb-3 fs-5">
+                        <span class="badge bg-primary rounded-circle question-number">{{ loop.index }}</span>
+                        <span class="card-title mb-0 flex-grow-1">{{ q.text }}</span>
+                    </legend>
                     <div class="row g-2 mt-2">
                         {% for letter, opt in [('A', q.opt_a), ('B', q.opt_b), ('C', q.opt_c)] %}
                         <div class="col-md-4">
@@ -47,9 +58,8 @@
                                 <input class="form-check-input" type="radio"
                                        name="question_{{ q.id }}"
                                        id="q{{ q.id }}_{{ letter }}"
-                                       value="{{ letter }}" required
-                                       onchange="this.closest('.option-card').classList.toggle('selected', this.checked)">
-                                <label class="form-check-label w-75" for="q{{ q.id }}_{{ letter }}">
+                                       value="{{ letter }}" required>
+                                <label class="form-check-label w-100" for="q{{ q.id }}_{{ letter }}">
                                     <span class="fw-bold">{{ letter }})</span> {{ opt }}
                                 </label>
                             </div>
@@ -58,71 +68,72 @@
                     </div>
                     <input type="hidden" name="question_id" value="{{ q.id }}">
                 </div>
-            </div>
+            </fieldset>
         </div>
         {% endfor %}
     </div>
-    <button type="submit" class="btn btn-success btn-lg w-100 mb-4 animate-in animate-in-delay-3">
-        <i class="bi bi-check2-circle me-2"></i>Submit All Answers
-    </button>
+    <div class="submit-bar animate-in animate-in-delay-3">
+        <span class="text-muted small d-none d-sm-inline" id="quiz-progress" aria-live="polite"></span>
+        <button type="submit" class="btn btn-success btn-lg flex-grow-1 flex-sm-grow-0">
+            <i class="bi bi-check2-circle me-2"></i>Submit All Answers
+        </button>
+    </div>
 </form>
-{% else %}
-<div class="alert alert-info d-flex align-items-center animate-in" role="alert">
+{% elif my_answers %}
+<div class="alert alert-success d-flex align-items-center animate-in" role="status">
     <i class="bi bi-emoji-smile fs-4 me-3"></i>
     <div>
         <strong>All questions answered!</strong><br>
         Check back later for new questions from the admin.
     </div>
 </div>
+{% else %}
+<div class="alert alert-info d-flex align-items-center animate-in" role="status">
+    <i class="bi bi-hourglass-split fs-4 me-3"></i>
+    <div>
+        <strong>The quiz hasn't started yet.</strong><br>
+        The admin hasn't added any questions — check back soon!
+    </div>
+</div>
 {% endif %}
 
 {% if my_answers %}
-<h4 class="mb-3 animate-in">
+<h2 class="h4 mb-3 mt-4 animate-in">
     <i class="bi bi-journal-check me-2 text-success"></i>Your Answers
-</h4>
-<div class="table-responsive animate-in">
-    <table class="table table-hover align-middle">
-        <thead class="table-primary">
-            <tr>
-                <th style="width:50px">#</th>
-                <th>Question</th>
-                <th>Your Answer</th>
-                <th style="width:100px" class="text-center">Score</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% set ns = namespace(rank=0) %}
-            {% for a in my_answers %}
-            {% set ns.rank = ns.rank + 1 %}
-            <tr>
-                <td class="fw-bold text-muted">{{ ns.rank }}</td>
-                <td>{{ a.text }}</td>
-                <td>
-                    <span class="badge bg-light text-dark border px-3 py-2">
-                        {{ a.option_text }}
-                    </span>
-                </td>
-                <td class="text-center">
-                    {% if a.score > 5 %}
-                    <span class="answer-score-badge score-high">
-                        <i class="bi bi-star-fill me-1"></i>{{ a.score }}
-                    </span>
-                    {% elif a.score > 0 %}
-                    <span class="answer-score-badge score-low">{{ a.score }}</span>
-                    {% else %}
-                    <span class="answer-score-badge score-zero">{{ a.score }}</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        <tfoot class="table-light fw-bold">
-            <tr>
-                <td colspan="3" class="text-end">Total Score:</td>
-                <td class="text-center text-primary fs-5">{{ total_score }}</td>
-            </tr>
-        </tfoot>
-    </table>
+</h2>
+<div class="card shadow-sm animate-in">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-primary">
+                <tr>
+                    <th style="width:50px">#</th>
+                    <th>Question</th>
+                    <th>Your Answer</th>
+                    <th style="width:100px" class="text-center">Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in my_answers %}
+                <tr>
+                    <td class="fw-bold text-muted">{{ loop.index }}</td>
+                    <td>{{ a.text }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border px-3 py-2 text-wrap text-start">
+                            {{ a.selected_option }}) {{ a.option_text }}
+                        </span>
+                    </td>
+                    <td class="text-center">{{ score_badge(a.score) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light fw-bold">
+                <tr>
+                    <td colspan="3" class="text-end">Total Score:</td>
+                    <td class="text-center text-primary fs-5">{{ total_score }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 </div>
 {% endif %}
 {% endblock %}

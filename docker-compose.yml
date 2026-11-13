@@ -1,13 +1,17 @@
 services:
   quiz:
     build: .
+    image: family-quiz:latest
     container_name: family-quiz
+    restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "${HOST_PORT:-5000}:5000"
     volumes:
       - quiz_data:/app/data
+    env_file:
+      - path: .env
+        required: false
     environment:
-      - FLASK_ENV=production
       - DATABASE_PATH=/app/data/quiz.db
 
 volumes:

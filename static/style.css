@@ -286,3 +286,50 @@ body {
 .animate-in-delay-1 { animation-delay: 0.1s; }
 .animate-in-delay-2 { animation-delay: 0.2s; }
 .animate-in-delay-3 { animation-delay: 0.3s; }
+
+/* ---- additions ---- */
+fieldset.quiz-card { min-width: 0; }
+fieldset.quiz-card legend { float: none; width: 100%; }
+
+.question-number {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.option-card .form-check-label { cursor: pointer; }
+
+.submit-bar {
+    position: sticky;
+    bottom: 12px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 12px 16px;
+    margin-bottom: 1.5rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.avatar { width: 36px; height: 36px; flex-shrink: 0; }
+.min-w-0 { min-width: 0; }
+.questions-header { background: rgba(102, 126, 234, 0.1); }
+
+/* Only small cards lift on hover; large panels stay still. */
+.tab-content .card:hover,
+.login-card:hover,
+fieldset.quiz-card:hover { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
